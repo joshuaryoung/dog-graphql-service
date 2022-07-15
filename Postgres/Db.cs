@@ -3,7 +3,6 @@ using Microsoft.EntityFrameworkCore;
 
 public class DogDataContext : DbContext {
   public DogDataContext(DbContextOptions<DogDataContext> options): base(options) {
-    options.ToString();
   }
 
   protected override void OnModelCreating(ModelBuilder modelBuilder) {
