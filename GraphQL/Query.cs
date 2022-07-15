@@ -20,8 +20,6 @@ public class Query {
   }
 
   private List<Dog> FetchDogs(DogDataContext dbContext, string? idIn) {
-    // var res = await client.GetStreamAsync("https://api.thedogapi.com/v1/images/search?limit=10");
-
     List<Dog>? dbRes = new List<Dog>();
     try {
       dbRes = dbContext?.dog?.ToList();

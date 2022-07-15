@@ -1,5 +1,4 @@
 using hot_chocolate_demo.GraphQL;
-using Postgres.Db;
 using Microsoft.EntityFrameworkCore;
 
 var  MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
