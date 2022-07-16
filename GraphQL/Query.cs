@@ -1,6 +1,5 @@
 namespace hot_chocolate_demo.GraphQL;
 public class Query {
-  private static readonly HttpClient client = new HttpClient();
   public List<Dog> GetDogs(DogDataContext dbContext, string? idIn) {
 
     List<Dog> res = FetchDogs(dbContext, idIn);

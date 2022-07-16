@@ -9,7 +9,8 @@ builder.Services.AddDbContext<DogDataContext>(
 builder.Services
     .AddGraphQLServer()
     .RegisterDbContext<DogDataContext>()
-    .AddQueryType<Query>();
+    .AddQueryType<Query>()
+    .AddMutationType<Mutation>();
 
 builder.Services.AddCors(options =>
 {
