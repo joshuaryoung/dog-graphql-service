@@ -23,7 +23,6 @@ public class Query {
     List<Dog>? dbRes = new List<Dog>();
     try {
       dbRes = dbContext?.dog?.ToList();
-      Console.WriteLine("here");
     } catch(Exception error) {
       Console.WriteLine(error);
     }
