@@ -16,21 +16,23 @@ public class Mutation {
     User currentUser = new User();
     
     try {
-      currentUser = dbContext.user.Where(el => el.Id == userIdIn).First();
+      currentUser = dbContext?.user?.Where(el => el.Id == userIdIn).FirstOrDefault() ?? new User();
     } catch(Exception error) {
       Console.WriteLine(error);
       return false;
     }   
     
     List<string> updatedDogList = new List<string>();
-    updatedDogList.AddRange(currentUser.DogsIdList);
+    if (currentUser.DogsIdList != null) {
+      updatedDogList.AddRange(currentUser.DogsIdList);
+    }
     if (!updatedDogList.Contains(dogIdIn)) {
       updatedDogList.Add(dogIdIn);
     }
 
     currentUser.DogsIdList = updatedDogList;
 
-    dbContext.SaveChanges();
+    dbContext?.SaveChanges();
 
     return true;
   }
@@ -38,7 +40,7 @@ public class Mutation {
     Dog dogInDb = new Dog();
 
     try {
-      dogInDb = dbContext.dog.FirstOrDefault(el => el.Id == dogIn.Id);
+      dogInDb = dbContext?.dog?.FirstOrDefault(el => el.Id == dogIn.Id);
     } catch (Exception error) {
       throw error;
     }
