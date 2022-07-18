@@ -38,8 +38,11 @@ public class User {
   [Column("avatar_url")]
   public string? AvatarUrl { get; set; }
 
-  public List<Dog> GetDogs(DogDataContext dbContext, [Parent] User currentUser) {
-    var userDogs = dbContext.dog.Where(dog => currentUser.DogsIdList.Contains(dog.Id)).ToList();
+  public List<Dog> GetDogs(DogDataContext dbContext, [Parent] User currentUser, int page = 0, int pageSize = 10) {
+    int pageParam = page;
+    if (page < 0) pageParam = 0;
+    if (pageSize < 1) pageSize = 1;
+    var userDogs = dbContext.dog.Where(dog => currentUser.DogsIdList.Contains(dog.Id)).Skip(pageParam * pageSize).Take(pageSize).ToList();
     return userDogs;
   }
 }
