@@ -1,14 +1,24 @@
 namespace hot_chocolate_demo.GraphQL;
 public class Query {
-  public List<Dog> GetDogs(DogDataContext dbContext, string? idIn) {
+  public GetDogsRes GetDogs(DogDataContext dbContext, string? idIn) {
 
     List<Dog> res = FetchDogs(dbContext, idIn);
 
-    return res;
+    return new GetDogsRes(){
+      Data = res,
+      TotalResults = res.Count()
+    };
   }
 
   public List<User>? GetUsers(DogDataContext dbContext) {
     return dbContext?.user?.ToList();
+  }
+
+  public GetDogsRes GetUserDogs(DogDataContext dbc, int idIn, int page = 0, int pageSize = 10) {
+    var currentUser = dbc?.user?.First(user => user.Id == idIn);
+    var dogs = currentUser?.GetDogs(dbc!, currentUser, page, pageSize);
+    var returnObj = new GetDogsRes() { Data = dogs, TotalResults = currentUser?.DogsIdList?.Count() };
+    return returnObj;
   }
 
   public User? GetUserById(DogDataContext dbContext, int? idIn) {
@@ -27,7 +37,7 @@ public class Query {
     }
 
     List<Dog> payload = new List<Dog>();
-    payload.AddRange(dbRes);
+    payload.AddRange(dbRes!);
 
     return payload;
   }

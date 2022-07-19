@@ -46,3 +46,13 @@ public class User {
     return userDogs;
   }
 }
+
+public class GetDogsRes {
+  public List<Dog>? Data { get; set; }
+  public int? TotalResults { get; set; }
+}
+
+public class GetUserRes {
+  public User? Data { get; set; }
+  public int? TotalResults { get; set; }
+}
