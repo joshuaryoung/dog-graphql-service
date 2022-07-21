@@ -52,7 +52,11 @@ public class GetDogsRes {
   public int? TotalResults { get; set; }
 }
 
-public class GetUserRes {
-  public User? Data { get; set; }
+public class QueryRes<T> {
+  public T? Data { get; set; }
   public int? TotalResults { get; set; }
+}
+
+public class MutationRes<T> {
+  public T? Data { get; set; }
 }

@@ -14,10 +14,10 @@ public class Query {
     return dbContext?.user?.ToList();
   }
 
-  public GetDogsRes GetUserDogs(DogDataContext dbc, int idIn, int page = 0, int pageSize = 10) {
+  public QueryRes<List<Dog>> GetUserDogs(DogDataContext dbc, int idIn, int page = 0, int pageSize = 10) {
     var currentUser = dbc?.user?.First(user => user.Id == idIn);
     var dogs = currentUser?.GetDogs(dbc!, currentUser, page, pageSize);
-    var returnObj = new GetDogsRes() { Data = dogs, TotalResults = currentUser?.DogsIdList?.Count() };
+    var returnObj = new QueryRes<List<Dog>>() { Data = dogs, TotalResults = currentUser?.DogsIdList?.Count() };
     return returnObj;
   }
 

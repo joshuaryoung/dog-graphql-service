@@ -64,4 +64,18 @@ public class Mutation {
 
     return true;
   }
+
+  public MutationRes<string> RemoveDogFromUserList(DogDataContext dbc, int userIdIn, string dogIdIn) {
+    var currentUser = dbc!.user!.FirstOrDefault(el => el.Id == userIdIn);
+
+    if (currentUser == null) {
+      throw new Exception("Specified user not found!");
+    }
+
+    List<string> dogList = currentUser!.DogsIdList ?? new List<string>();
+    var removed = dogList.Remove(dogIdIn);
+
+    dbc.SaveChanges();
+    return new MutationRes<string>() { Data = removed ? dogIdIn : "" };
+  }
 }
