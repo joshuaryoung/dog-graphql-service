@@ -1,0 +1,14 @@
+version: '3'
+services:
+  api:
+    build: .
+    environment:
+      - ASPNETCORE_URLS=http://+:5142
+    ports:
+      - "5142:5142"
+  postgres:
+    build: ./postgres-docker
+    environment:
+      - POSTGRES_PASSWORD=Password1
+    ports:
+      - "5432:5432"
