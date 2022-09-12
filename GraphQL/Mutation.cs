@@ -1,6 +1,14 @@
 namespace hot_chocolate_demo.GraphQL;
 
 public class Mutation {
+  public MutationRes<AuthPayload> UserAuthenticate(DogDataContext dbContext, string username, string password) {
+    try {
+      // TODO: add 'username' and 'password' columns to db
+    } catch(Exception error) {
+      Console.WriteLine(error);
+    }
+    return new MutationRes<AuthPayload>() { Data = new AuthPayload() { Success = false, Message = "temp message" } };
+  }
   public bool AddDogToDbAndUserList(DogDataContext dbContext, int userIdIn, Dog dogIn) {
     try {
       AddDog(dbContext, dogIn);

@@ -60,3 +60,9 @@ public class QueryRes<T> {
 public class MutationRes<T> {
   public T? Data { get; set; }
 }
+
+public class AuthPayload {
+  public bool Success { get; set; }
+  public string? JWT { get; set; }
+  public string? Message { get; set; }
+}
