@@ -10,5 +10,7 @@ create table if not exists "user" (
     first_name varchar,
     last_name varchar,
     avatar_url varchar,
+    username varchar,
+    "password" varchar,
     primary key (id)
 );

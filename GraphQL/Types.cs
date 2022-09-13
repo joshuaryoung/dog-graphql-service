@@ -38,6 +38,12 @@ public class User {
   [Column("avatar_url")]
   public string? AvatarUrl { get; set; }
 
+  [Column("username")]
+  public string? Username { get; set; }
+
+  [Column("password")]
+  public string? Password { get; set; }
+
   public List<Dog> GetDogs(DogDataContext dbContext, [Parent] User currentUser, int page = 0, int pageSize = 10) {
     int pageParam = page;
     if (page < 0) pageParam = 0;

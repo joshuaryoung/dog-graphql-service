@@ -1,13 +1,63 @@
 namespace hot_chocolate_demo.GraphQL;
+using System.IdentityModel.Tokens.Jwt;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.Identity;
+using System.Text;
+using System.Security.Claims;
 
 public class Mutation {
+  private readonly IConfiguration _config;
+  public Mutation(IConfiguration config) {
+    _config = config;
+  }
   public MutationRes<AuthPayload> UserAuthenticate(DogDataContext dbContext, string username, string password) {
+    User? currentUser = null;
+      // Find user by username
+      // Hash password
+      // compare password
+      // HAPPY PATH - create JWT
+      // -- return payload
+      //
     try {
-      // TODO: add 'username' and 'password' columns to db
+      currentUser = dbContext?.user?.Where(el => el.Username == username).FirstOrDefault();
     } catch(Exception error) {
       Console.WriteLine(error);
+      return new MutationRes<AuthPayload>() { Data = new AuthPayload() { Success = false, Message = "Login Failed" } };
     }
-    return new MutationRes<AuthPayload>() { Data = new AuthPayload() { Success = false, Message = "temp message" } };
+
+    if (currentUser == null) {
+      return new MutationRes<AuthPayload>() { Data = new AuthPayload() { Success = false, Message = "Login Failed" } };
+    }
+
+    var passwordHasher = new PasswordHasher<User>();
+    // var hashedPassword = passwordHasher.HashPassword(currentUser, password);
+    var verifyPasswordRes = passwordHasher.VerifyHashedPassword(currentUser, currentUser.Password, password);
+    var verifyPasswordResString = verifyPasswordRes.ToString();
+    // Console.WriteLine("hashedPassword: " + hashedPassword);
+    Console.WriteLine("password: " + password);
+    Console.WriteLine("verifyPasswordResString: " + verifyPasswordResString);
+
+    if (verifyPasswordRes == 0) {
+      return new MutationRes<AuthPayload>() { Data = new AuthPayload() { Success = false, Message = "Login Failed" } };
+    }
+
+    var tokenHandler = new JwtSecurityTokenHandler();
+    var keyString = _config["JwtSecretKey"];
+    Console.WriteLine("keyString: " + keyString);
+    var key = UTF8Encoding.UTF8.GetBytes(_config["JwtSecretKey"]!);
+
+    var tokenDescriptor = new SecurityTokenDescriptor() {
+      Subject = new ClaimsIdentity(new[] { new Claim("token", currentUser.Password!), new Claim("username", currentUser.Username!) }),
+      Expires = DateTime.UtcNow.AddDays(1),
+      SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+      // TODO: Pick up here
+    };
+    var token = tokenHandler.CreateToken(tokenDescriptor);
+    var Jwt = tokenHandler.WriteToken(token);
+
+    // Console.WriteLine(currentUser.FirstName);
+
+    return new MutationRes<AuthPayload>() { Data = new AuthPayload() { Success = true, Message = "Login Successful", JWT = Jwt } };
   }
   public bool AddDogToDbAndUserList(DogDataContext dbContext, int userIdIn, Dog dogIn) {
     try {
