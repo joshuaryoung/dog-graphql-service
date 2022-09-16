@@ -5,7 +5,7 @@ var  MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<DogDataContext>(
-  o => o.UseNpgsql(builder?.Configuration?.GetConnectionString("PostgresDb")) );
+  o => o.UseNpgsql(builder.Configuration["PostgresDb"]));
 builder.Services
     .AddGraphQLServer()
     .RegisterDbContext<DogDataContext>()

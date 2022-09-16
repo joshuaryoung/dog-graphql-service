@@ -26,7 +26,8 @@ public class Mutation {
     }
 
     if (currentUser == null) {
-      return new MutationRes<AuthPayload>() { Data = new AuthPayload() { Success = false, Message = "Login Failed" } };
+      throw new Exception("Login Failed");
+      // return new MutationRes<AuthPayload>() { Data = new AuthPayload() { Success = false, Message = "Login Failed" } };
     }
 
     var passwordHasher = new PasswordHasher<User>();
@@ -47,15 +48,12 @@ public class Mutation {
     var key = UTF8Encoding.UTF8.GetBytes(_config["JwtSecretKey"]!);
 
     var tokenDescriptor = new SecurityTokenDescriptor() {
-      Subject = new ClaimsIdentity(new[] { new Claim("token", currentUser.Password!), new Claim("username", currentUser.Username!) }),
+      Subject = new ClaimsIdentity(new[] { new Claim("id", currentUser.Id.ToString()!), new Claim("username", currentUser.Username!) }),
       Expires = DateTime.UtcNow.AddDays(1),
       SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
-      // TODO: Pick up here
     };
     var token = tokenHandler.CreateToken(tokenDescriptor);
     var Jwt = tokenHandler.WriteToken(token);
-
-    // Console.WriteLine(currentUser.FirstName);
 
     return new MutationRes<AuthPayload>() { Data = new AuthPayload() { Success = true, Message = "Login Successful", JWT = Jwt } };
   }
