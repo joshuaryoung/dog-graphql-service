@@ -69,6 +69,8 @@ public class MutationRes<T> {
 
 public class AuthPayload {
   public bool Success { get; set; }
-  public string? JWT { get; set; }
+  public string? Jwt { get; set; }
   public string? Message { get; set; }
+  public DateTime? Expires { get; set; }
+  public User? User { get; set; }
 }

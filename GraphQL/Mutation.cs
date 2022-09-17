@@ -12,22 +12,15 @@ public class Mutation {
   }
   public MutationRes<AuthPayload> UserAuthenticate(DogDataContext dbContext, string username, string password) {
     User? currentUser = null;
-      // Find user by username
-      // Hash password
-      // compare password
-      // HAPPY PATH - create JWT
-      // -- return payload
-      //
     try {
       currentUser = dbContext?.user?.Where(el => el.Username == username).FirstOrDefault();
     } catch(Exception error) {
       Console.WriteLine(error);
-      return new MutationRes<AuthPayload>() { Data = new AuthPayload() { Success = false, Message = "Login Failed" } };
+      throw new Exception("Login Failed");
     }
 
     if (currentUser == null) {
       throw new Exception("Login Failed");
-      // return new MutationRes<AuthPayload>() { Data = new AuthPayload() { Success = false, Message = "Login Failed" } };
     }
 
     var passwordHasher = new PasswordHasher<User>();
@@ -39,23 +32,24 @@ public class Mutation {
     Console.WriteLine("verifyPasswordResString: " + verifyPasswordResString);
 
     if (verifyPasswordRes == 0) {
-      return new MutationRes<AuthPayload>() { Data = new AuthPayload() { Success = false, Message = "Login Failed" } };
+      throw new Exception("Login Failed");
     }
 
     var tokenHandler = new JwtSecurityTokenHandler();
     var keyString = _config["JwtSecretKey"];
     Console.WriteLine("keyString: " + keyString);
     var key = UTF8Encoding.UTF8.GetBytes(_config["JwtSecretKey"]!);
+    var Expires = DateTime.UtcNow.AddDays(1);
 
     var tokenDescriptor = new SecurityTokenDescriptor() {
       Subject = new ClaimsIdentity(new[] { new Claim("id", currentUser.Id.ToString()!), new Claim("username", currentUser.Username!) }),
-      Expires = DateTime.UtcNow.AddDays(1),
+      Expires = Expires,
       SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
     };
     var token = tokenHandler.CreateToken(tokenDescriptor);
     var Jwt = tokenHandler.WriteToken(token);
 
-    return new MutationRes<AuthPayload>() { Data = new AuthPayload() { Success = true, Message = "Login Successful", JWT = Jwt } };
+    return new MutationRes<AuthPayload>() { Data = new AuthPayload() { Success = true, Message = "Login Successful", Jwt = Jwt, Expires = Expires, User = currentUser } };
   }
   public bool AddDogToDbAndUserList(DogDataContext dbContext, int userIdIn, Dog dogIn) {
     try {
