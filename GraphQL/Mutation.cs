@@ -10,7 +10,7 @@ public class Mutation {
   public Mutation(IConfiguration config) {
     _config = config;
   }
-  public MutationRes<AuthPayload> UserAuthenticate(DogDataContext dbContext, string username, string password) {
+  public MutationRes<AuthPayload> UserAuthenticate([Service] IHttpContextAccessor httpContextAccessor, DogDataContext dbContext, string username, string password) {
     User? currentUser = null;
     try {
       currentUser = dbContext?.user?.Where(el => el.Username == username).FirstOrDefault();
@@ -35,6 +35,9 @@ public class Mutation {
       throw new Exception("Login Failed");
     }
 
+    var claims = new List<Claim> {
+      new Claim(ClaimTypes.Role, "Admin")
+    };
     var tokenHandler = new JwtSecurityTokenHandler();
     var keyString = _config["JwtSecretKey"];
     Console.WriteLine("keyString: " + keyString);
@@ -42,12 +45,16 @@ public class Mutation {
     var Expires = DateTime.UtcNow.AddDays(1);
 
     var tokenDescriptor = new SecurityTokenDescriptor() {
-      Subject = new ClaimsIdentity(new[] { new Claim("id", currentUser.Id.ToString()!), new Claim("username", currentUser.Username!) }),
+      Subject = new ClaimsIdentity(new[] { new Claim("id", currentUser.Id.ToString()!), new Claim("username", currentUser.Username!)}),
       Expires = Expires,
+      Issuer = "http://localhost:5142",
+      Audience = "http://localhost:3000",
       SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
     };
     var token = tokenHandler.CreateToken(tokenDescriptor);
     var Jwt = tokenHandler.WriteToken(token);
+
+    httpContextAccessor!.HttpContext!.Response.Headers.Add("Set-Cookie", $"Authorization=Bearer {Jwt}; Expires={Expires}");
 
     return new MutationRes<AuthPayload>() { Data = new AuthPayload() { Success = true, Message = "Login Successful", Jwt = Jwt, Expires = Expires, User = currentUser } };
   }
