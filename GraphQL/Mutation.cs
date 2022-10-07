@@ -10,6 +10,44 @@ public class Mutation {
   public Mutation(IConfiguration config) {
     _config = config;
   }
+  public MutationRes<UserCreatePayload> UserCreate([Service] IHttpContextAccessor httpContextAccessor, DogDataContext dbContext, string username, string password, string firstName, string lastName) {
+    User? currentUser = null;
+    try {
+      currentUser = dbContext?.user?.Where(el => el.Username == username).FirstOrDefault();
+    } catch(Exception error) {
+      Console.WriteLine(error);
+      throw new Exception("User Creation Failed to Execute query");
+    }
+
+    if (currentUser != null) {
+      var msg = "User with this username already exists. Please try a different username";
+      Console.WriteLine(msg);
+      return new MutationRes<UserCreatePayload>() { Data = new UserCreatePayload() { Success = false, Message = msg } };
+    }
+
+    try {
+      dbContext!.user!.Add(new User() { FirstName = firstName, LastName = lastName, Username = username });
+      dbContext.SaveChanges();
+    } catch (Exception err) {
+      var msg = $"There was an error adding user {username} to the database";
+      Console.WriteLine(err);
+      throw new Exception(msg);
+    }
+    var userAdded = dbContext!.user!.Where(user => user.Username == username).FirstOrDefault() ?? new User();
+    if (userAdded == null) {
+      var msg = $"There was an error retrieving user {username} from the database";
+      Console.WriteLine(msg);
+      throw new Exception(msg);
+    }
+
+    var passwordHasher = new PasswordHasher<User>();
+    var hashedPassword = passwordHasher.HashPassword(userAdded, password);
+    userAdded.Password = hashedPassword;
+    userAdded.RolesIdList = new List<int>{200};
+    dbContext.SaveChanges();
+
+    return new MutationRes<UserCreatePayload>() { Data = new UserCreatePayload() { Success = true, Message = "User Creation Successful" } };
+  }
   public MutationRes<AuthPayload> UserAuthenticate([Service] IHttpContextAccessor httpContextAccessor, DogDataContext dbContext, string username, string password) {
     User? currentUser = null;
     try {
@@ -53,14 +91,12 @@ public class Mutation {
     var tokenDescriptor = new SecurityTokenDescriptor() {
       Subject = new ClaimsIdentity(claims),
       Expires = Expires,
-      Issuer = "http://localhost:5142",
-      Audience = "http://localhost:3000",
       SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
     };
     var token = tokenHandler.CreateToken(tokenDescriptor);
     var Jwt = tokenHandler.WriteToken(token);
 
-    httpContextAccessor!.HttpContext!.Response.Headers.Add("Set-Cookie", $"Authorization=Bearer {Jwt}; Expires={Expires}");
+    // httpContextAccessor!.HttpContext!.Response.Headers.Add("Set-Cookie", $"Authorization=Bearer {Jwt}; Expires={Expires}");
 
     return new MutationRes<AuthPayload>() { Data = new AuthPayload() { Success = true, Message = "Login Successful", Jwt = Jwt, Expires = Expires, User = currentUser } };
   }

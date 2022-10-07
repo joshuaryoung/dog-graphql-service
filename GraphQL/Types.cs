@@ -97,3 +97,8 @@ public class AuthPayload {
   public DateTime? Expires { get; set; }
   public User? User { get; set; }
 }
+
+public class UserCreatePayload {
+  public bool Success { get; set; }
+  public string? Message { get; set; }
+}
