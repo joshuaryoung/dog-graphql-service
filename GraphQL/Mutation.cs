@@ -45,7 +45,7 @@ public class Mutation {
     var Expires = DateTime.UtcNow.AddDays(1);
 
     var tokenDescriptor = new SecurityTokenDescriptor() {
-      Subject = new ClaimsIdentity(new[] { new Claim("id", currentUser.Id.ToString()!), new Claim("username", currentUser.Username!)}),
+      Subject = new ClaimsIdentity(new[] { new Claim("id", currentUser.Id.ToString()!)}),
       Expires = Expires,
       Issuer = "http://localhost:5142",
       Audience = "http://localhost:3000",

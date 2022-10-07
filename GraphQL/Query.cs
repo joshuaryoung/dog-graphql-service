@@ -4,10 +4,8 @@ using HotChocolate.AspNetCore.Authorization;
 
 public class Query {
   public GetDogsRes GetDogs(ClaimsPrincipal claimsPrincipal, DogDataContext dbContext, string? idIn) {
-    // claimsPrincipal?.Claims.ToList().ForEach(claim => Console.WriteLine($"claim: {claim}") );
-    // context.Request.Headers.ToList().ForEach(header => Console.WriteLine($"header: {header}") );
 
-    List<Dog> res = FetchDogs(dbContext, idIn);
+    List<Dog> res = FetchDogs(dbContext);
 
     return new GetDogsRes() {
       Data = res,
@@ -27,6 +25,19 @@ public class Query {
       throw new Exception("Invalid JWT received!");
     }
     var idParam = role == "admin" && idIn != null ? idIn : int.Parse(claimId);
+    var currentUser = dbc?.user?.First(user => user.Id == idParam);
+    var dogs = currentUser?.GetDogs(dbc!, currentUser, page, pageSize);
+    var returnObj = new QueryRes<List<Dog>>() { Data = dogs, TotalResults = currentUser?.DogsIdList?.Count() };
+    return returnObj;
+  }
+
+  public QueryRes<List<Dog>> GetMyDogs(ClaimsPrincipal claimsPrincipal, DogDataContext dbc, int page = 0, int pageSize = 10) {
+    var claimId = claimsPrincipal?.Claims.SingleOrDefault(claim => claim.Type == "id")?.Value;
+
+    if (claimId == null) {
+      throw new Exception("Invalid JWT received!");
+    }
+    var idParam = int.Parse(claimId);
     var currentUser = dbc?.user?.First(user => user.Id == idParam);
     var dogs = currentUser?.GetDogs(dbc!, currentUser, page, pageSize);
     var returnObj = new QueryRes<List<Dog>>() { Data = dogs, TotalResults = currentUser?.DogsIdList?.Count() };
@@ -62,7 +73,7 @@ public class Query {
     return dbContext.user?.Where(el => el.Id == idIn).ToList().First<User>();
   }
 
-  private List<Dog> FetchDogs(DogDataContext dbContext, string? idIn) {
+  private List<Dog> FetchDogs(DogDataContext dbContext) {
     List<Dog>? dbRes = new List<Dog>();
     try {
       dbRes = dbContext?.dog?.ToList();
