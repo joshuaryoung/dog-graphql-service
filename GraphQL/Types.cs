@@ -16,6 +16,15 @@ public class Dog {
   public string? AvatarUrl { get; set; }
 }
 
+public class Role {
+  [JsonPropertyName("id")]
+  [Column("id")]
+  public int Id { get; set; }
+  [JsonPropertyName("name")]
+  [Column("name")]
+  public string? Name { get; set; }
+}
+
 public class Breed {
   [JsonPropertyName("name")]
   [Key]
@@ -43,6 +52,20 @@ public class User {
 
   [Column("password")]
   public string? Password { get; set; }
+
+  [Column("roles")]
+  public List<int>? RolesIdList { get; set; }
+  public List<Role> GetRoles(DogDataContext dbContext, [Parent] User currentUser) {
+    var roleIds = currentUser.RolesIdList;
+
+    if (roleIds == null) {
+      return new List<Role>();
+    }
+
+    var roles = dbContext?.role?.Where(el => roleIds.Contains(el.Id)).ToList() ?? new List<Role>();
+
+    return roles;
+  }
 
   public List<Dog> GetDogs(DogDataContext dbContext, [Parent] User currentUser, int page = 0, int pageSize = 10) {
     int pageParam = page;

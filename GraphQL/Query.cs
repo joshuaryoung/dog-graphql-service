@@ -45,7 +45,6 @@ public class Query {
   }
 
   public User? GetMe([Service] IHttpContextAccessor httpContextAccessor, ClaimsPrincipal claimsPrincipal, DogDataContext dbContext) {
-    var role = claimsPrincipal?.Claims.SingleOrDefault(claim => claim.Type.Contains("role"))?.Value;
     var claimId = claimsPrincipal?.Claims.SingleOrDefault(claim => claim.Type == "id")?.Value;
     if (claimId == null) {
       throw new Exception("Invalid JWT received!");
@@ -55,7 +54,7 @@ public class Query {
   }
 
   public User? GetUserById([Service] IHttpContextAccessor httpContextAccessor, ClaimsPrincipal claimsPrincipal, DogDataContext dbContext, int? idIn) {
-    var role = claimsPrincipal?.Claims.SingleOrDefault(claim => claim.Type.Contains("role"))?.Value;
+    var roles = claimsPrincipal?.Claims.Where(claim => claim.Type.Contains("role"))?.Select(claim => claim.Value) ?? new List<string>();
     var claimId = claimsPrincipal?.Claims.SingleOrDefault(claim => claim.Type == "id")?.Value;
     if (claimId == null) {
       throw new Exception("Invalid JWT received!");
@@ -64,10 +63,12 @@ public class Query {
       throw new ArgumentException("idIn is a required parameter!");
     }
 
-    var isAuthorized = role == "admin" || idIn == int.Parse(claimId);
+    var isAuthorized = roles.Contains("admin") || idIn == int.Parse(claimId);
 
     if (!isAuthorized) {
-      throw new UnauthorizedAccessException("Not Authorized to Access This User");
+      string msg = "Not Authorized to Access This User";
+      Console.WriteLine(msg);
+      throw new UnauthorizedAccessException(msg);
     }
 
     return dbContext.user?.Where(el => el.Id == idIn).ToList().First<User>();

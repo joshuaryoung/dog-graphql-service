@@ -35,9 +35,15 @@ public class Mutation {
       throw new Exception("Login Failed");
     }
 
-    var claims = new List<Claim> {
-      new Claim(ClaimTypes.Role, "Admin")
-    };
+    var roles = currentUser.GetRoles(dbContext!, currentUser);
+    if (roles == null) {
+      string msg = "Unable to find roles for current user!";
+      Console.WriteLine(msg);
+      throw new Exception(msg);
+    }
+
+    var claims = roles.Select(role => new Claim(ClaimTypes.Role, role.Name!)).ToList();
+    claims.Add(new Claim("id", currentUser.Id.ToString()!));
     var tokenHandler = new JwtSecurityTokenHandler();
     var keyString = _config["JwtSecretKey"];
     Console.WriteLine("keyString: " + keyString);
@@ -45,7 +51,7 @@ public class Mutation {
     var Expires = DateTime.UtcNow.AddDays(1);
 
     var tokenDescriptor = new SecurityTokenDescriptor() {
-      Subject = new ClaimsIdentity(new[] { new Claim("id", currentUser.Id.ToString()!)}),
+      Subject = new ClaimsIdentity(claims),
       Expires = Expires,
       Issuer = "http://localhost:5142",
       Audience = "http://localhost:3000",

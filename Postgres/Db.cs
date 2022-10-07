@@ -11,4 +11,5 @@ public class DogDataContext : DbContext {
 
   public DbSet<Dog>? dog { get; set; }
   public DbSet<User>? user { get; set; }
+  public DbSet<Role>? role { get; set; }
 }
