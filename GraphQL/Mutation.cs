@@ -13,7 +13,7 @@ public class Mutation {
   public MutationRes<UserCreatePayload> UserCreate([Service] IHttpContextAccessor httpContextAccessor, DogDataContext dbContext, string username, string password, string firstName, string lastName) {
     User? currentUser = null;
     try {
-      currentUser = dbContext?.user?.Where(el => el.Username == username).FirstOrDefault();
+      currentUser = dbContext?.user?.Where(el => el!.Username!.ToLower() == username.ToLower()).FirstOrDefault();
     } catch(Exception error) {
       Console.WriteLine(error);
       throw new Exception("User Creation Failed to Execute query");
@@ -51,7 +51,7 @@ public class Mutation {
   public MutationRes<AuthPayload> UserAuthenticate([Service] IHttpContextAccessor httpContextAccessor, DogDataContext dbContext, string username, string password) {
     User? currentUser = null;
     try {
-      currentUser = dbContext?.user?.Where(el => el.Username == username).FirstOrDefault();
+      currentUser = dbContext?.user?.Where(el => el!.Username!.ToLower() == username.ToLower()).FirstOrDefault();
     } catch(Exception error) {
       Console.WriteLine(error);
       throw new Exception("Login Failed");
@@ -62,13 +62,8 @@ public class Mutation {
     }
 
     var passwordHasher = new PasswordHasher<User>();
-    // var hashedPassword = passwordHasher.HashPassword(currentUser, password);
     var verifyPasswordRes = passwordHasher.VerifyHashedPassword(currentUser, currentUser.Password, password);
     var verifyPasswordResString = verifyPasswordRes.ToString();
-    // Console.WriteLine("hashedPassword: " + hashedPassword);
-    Console.WriteLine("password: " + password);
-    Console.WriteLine("verifyPasswordResString: " + verifyPasswordResString);
-
     if (verifyPasswordRes == 0) {
       throw new Exception("Login Failed");
     }
