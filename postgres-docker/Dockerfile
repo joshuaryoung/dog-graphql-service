@@ -1,4 +1,3 @@
 FROM postgres
 
-ADD CreateDB.sql /docker-entrypoint-initdb.d/
-ADD CreateDefaultUser.sql /docker-entrypoint-initdb.dddo
+COPY CreateDB.sql /docker-entrypoint-initdb.d/

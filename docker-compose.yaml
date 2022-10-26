@@ -1,14 +1,27 @@
-version: '3'
+version: '3.8'
 services:
   api:
+    image: joshuaryoung/dog-api
     build: .
     environment:
       - ASPNETCORE_URLS=http://+:5142
-    ports:
-      - "5142:5142"
+      - PostgresDb=Host=postgres; Port=5432; Database=postgres; Username=postgres; Password=Password1
+      - JwtSecretKey=6329984a-dab3-4552-acfd-541454b49ec2
+    # ports:
+    #   - "5142:5142"
+    container_name: api
   postgres:
+    image: joshuaryoung/dog-postgres
     build: ./postgres-docker
     environment:
       - POSTGRES_PASSWORD=Password1
+    # ports:
+    #   - "5432:5432"
+    container_name: postgres
+    # volumes:
+    #   - ./db-data/:/var/lib/pstgresql/data/
+  react:
+    image: joshuaryoung/dog-ui
+    build: ../dog-pics
     ports:
-      - "5432:5432"
+      - "80:80"
